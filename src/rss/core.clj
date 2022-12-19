@@ -61,6 +61,7 @@
       )
     )
   )
+
 (defn parse-args
   [& args]
   "Parse the command line arguments and return a configuration from it."
