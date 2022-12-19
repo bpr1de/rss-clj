@@ -7,6 +7,7 @@ pom.xml.asc
 *.iml
 *.jar
 *.class
+*.swp
 /.lein-*
 /.nrepl-port
 /.prepl-port
