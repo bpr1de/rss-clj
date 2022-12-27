@@ -1,6 +1,6 @@
 ;;
 ;; Support for notifications using the Oracle Notification Service (ONS).
-;; This requires a tenancy in that has been configured with a topic and
+;; This requires an OCI tenancy that has been configured with a topic and
 ;; subscribers to deliver published messages to.
 ;; See https://docs.oracle.com/en-us/iaas/pl-sql-sdk/doc/ons-package.html
 ;;
