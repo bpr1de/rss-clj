@@ -5,6 +5,8 @@ A Clojure application designed to parse articles from RSS feeds, and
 
 ## Usage
 
+Build with Leiningen e.g. `lein uberjar`
+
 *java -jar <this-uberjar.jar> [/path/to/config]*
 
 [/path/to/config] may be omitted, in which case ~/.rss will be used by default.
