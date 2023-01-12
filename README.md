@@ -37,6 +37,13 @@ folder. To use the instance principal-based OCI client, this application
 must be running on an OCI instance and your tenancy must be configured with 
 a policy to allow the instance to access your topic. See here for guidance: https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm
 
+## Docker
+
+You may build the application into an Docker image using the included example
+Dockerfile, and run it as follows (example):
+
+`docker run -d --mount type=bind,source=$HOME/.rss,target=/app/rss.xml,readonly rss-clj`
+
 ## License
 
 Copyright © 2022 Bryan Phillippe, <bp@darkforest.org>
