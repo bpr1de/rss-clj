@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<topic ocid='ocid1.onstopic.oc1.phx.aaaaaaa......' client='instance'>
+    <feed link='https://alerts.weather.gov/cap/wwaatmget.php?x=WAC033'/>
+    <feed link='https://www.nps.gov/feeds/getNewsRSS.htm?id=mora'/>
+</topic>
