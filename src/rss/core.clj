@@ -30,7 +30,7 @@
     )
   )
 
-(defn valid-article
+(defn valid-article?
   [article]
   "Tests whether the article we parsed is suitable for acting on."
   (every? (complement nil?) (vals article))
@@ -99,7 +99,7 @@
       (doseq [feed (get-feeds config)]
         (try
           (doseq [article (parse-feed (xml/parse feed))]
-            (if (valid-article article)
+            (if (valid-article? article)
               (when (< 0 (.compareTo (:date article) previous-time))
                 (rss.ons/notify notification-client (get-topic config) article)
                 )
