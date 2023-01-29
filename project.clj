@@ -11,6 +11,5 @@
   ]
   :main rss.core
   :target-path "target/%s"
-  :jvm-opts ["--illegal-access=deny"]
   :profiles {:uberjar {:aot :all
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})
