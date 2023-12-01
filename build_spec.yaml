@@ -5,6 +5,11 @@ shell: bash
 
 steps:
   - type: Command
-    name: "Build app"
+    name: "Build container"
     command: |
       docker build -t rss-clj .
+
+outputArtifacts:
+  - name: container
+    type: DOCKER_IMAGE
+    location: rss-clj
