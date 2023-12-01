@@ -42,11 +42,11 @@ a policy to allow the instance to access your topic. See here for guidance: http
 You may build the application into an Docker image using the included example
 Dockerfile, and run it as follows (example):
 
-`docker run -d --mount type=bind,source=$HOME/.rss,target=/app/rss.xml,readonly rss-clj`
+`docker run -d -v $HOME/.rss:/app/rss.xml rss-clj`
 
 ## License
 
-Copyright © 2022 Bryan Phillippe, <bp@darkforest.org>
+Copyright © 2023 Bryan Phillippe, <bp@darkforest.org>
 
 This program and the accompanying materials are made available under the
 terms of the Eclipse Public License 2.0 which is available at
