@@ -9,4 +9,4 @@ RUN lein uberjar
 FROM clojure:temurin-21-lein
 RUN mkdir /app
 COPY --from=builder /build/target/uberjar/rss-*-standalone.jar /app/rss.jar
-CMD ["java", "-jar", "/app/rss.jar", "/app/rss.xml"]
+CMD ["java", "-jar", "/app/rss.jar"]
