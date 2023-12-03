@@ -94,40 +94,37 @@
 
     ;; Loop indefinitely, only notifying for new articles.
     (loop [previous-time (Timestamp/valueOf ^LocalDateTime
-                              (.. (LocalDateTime/now) (minusDays 7)))
-           sleep-duration 0
-           config (read-config config-path)
-           notification-client (rss.ons/make-client (get-client-type config))]
+                              (.. (LocalDateTime/now) (minusDays 7)))]
 
-      (Thread/sleep sleep-duration)
+      (let [config (read-config config-path)
+            notification-client (rss.ons/make-client (get-client-type config))]
 
-      ;; If there are no feeds in the configuration, just skip this cycle.
-      (when (nil? (first (get-feeds config)))
-        (println "Warning: no feeds in the configuration.")
-        )
+        ;; If there are no feeds in the configuration, just skip this cycle.
+        (when (nil? (first (get-feeds config)))
+          (println "Warning: no feeds in the configuration.")
+          )
 
-      (doseq [feed (get-feeds config)]
-        (try
-          (doseq [article (parse-feed (xml/parse feed))]
-            (if (valid-article? article)
-              (when (< 0 (.compareTo (:date article) previous-time))
-                (rss.ons/notify notification-client (get-topic config) article)
+        (doseq [feed (get-feeds config)]
+          (try
+            (doseq [article (parse-feed (xml/parse feed))]
+              (if (valid-article? article)
+                (when (< 0 (.compareTo (:date article) previous-time))
+                  (rss.ons/notify notification-client (get-topic config) article)
+                  )
+                (println (str "Invalid article: " article))
                 )
-              (println (str "Invalid article: " article))
               )
-            )
 
-          (catch Exception e
-            (println (str "Failed to read feed: " feed ": " (.getMessage e)))
+            (catch Exception e
+              (println (str "Failed to read feed: " feed ": " (.getMessage e)))
+              )
             )
           )
         )
 
-      (recur (Timestamp/valueOf (LocalDateTime/now))
-             (.. (TimeUnit/MINUTES) (toMillis 10))
-             (read-config config-path)
-             (rss.ons/make-client (get-client-type config))
-             )
+        (Thread/sleep (.. (TimeUnit/MINUTES) (toMillis 10)))
+
+        (recur (Timestamp/valueOf (LocalDateTime/now)))
       )
     )
   )
