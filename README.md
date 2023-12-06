@@ -8,21 +8,27 @@ Build with Leiningen e.g. `lein uberjar`
 
 ## Usage
 
+*lein run*
+
+or
+
 *java -jar <this-uberjar.jar> [/path/to/config]*
 
-The path to the configuration file may be local or a URL. In any case, the configuration file will be re-read on each cycle, so must be durable.
+The path to the configuration file may be local or a URL. In any case, the configuration file will be re-read on each cycle, so it must be durable.
 
-`/path/to/config` may be omitted, in which case the application will first try reading a path from the environment variable `$RSS_CONFIG_PATH`, and failing that, will look for a configuration in `~/.rss`.
+`/path/to/config` may be omitted, in which case the application will first try reading the path from the environment variable `$RSS_CONFIG_PATH`, and failing that, will look for a configuration in `~/.rss`.
 
 The config file must be a valid XML file matching the following example format:
 
 ```
 <?xml version='1.0' encoding='UTF-8'?>
-<topic ocid='ocid1.onstopic.phx.your.ocid.here' client='file'>
+<topic ocid='ocid1.onstopic.phx.your.ocid.here' client='file' interval='15'>
     <feed link='https://alerts.weather.gov/cap/wwaatmget.php?x=WAC033'/>
     <feed link='https://www.nps.gov/feeds/getNewsRSS.htm?id=mora'/>
 </topic>
 ```
+
+The `interval` is in minutes, and defaults to 10 if omitted.
 
 To use ONS for notifications, define both a topic OCID in the `ocid` attribute and a client type in the `client` attribute of the `topic` tag.  The `ocid` refers to the OCID of your notification topic, and the `client` is a value of `file` or `instance`, for OCI file-based client configuration or instance principal-based client configuration, respectively.
 

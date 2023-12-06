@@ -12,9 +12,9 @@
   )
 
 (defn parse-feed
+  [xml]
   "Parse an XML feed according to its type, either RSS 2.0 or Atom, and return
    a sequence of articles from the feed."
-  [xml]
   (let [tag (:tag xml) content (:content xml)]
     (case tag
       ;; Parse RSS feeds
@@ -51,6 +51,15 @@
     (:client (:attrs xml))
     )
   )
+
+ (defn get-interval
+   [xml]
+   "Return the polling interval from the configuration, or a default.
+    Minimum interval is 1 minute."
+   (let [v (and (= (:tag xml) :topic) (:interval (:attrs xml)))]
+     (max 1 (Integer/parseInt (if (nil? v) "10" v)))
+     )
+   )
 
 (defn get-feeds
   [xml]
@@ -106,6 +115,7 @@
 
         (doseq [feed (get-feeds config)]
           (try
+            (println (str "Checking feed " feed "..."))
             (doseq [article (parse-feed (xml/parse feed))]
               (if (valid-article? article)
                 (when (< 0 (.compareTo (:date article) previous-time))
@@ -120,9 +130,8 @@
               )
             )
           )
+        (Thread/sleep (.. (TimeUnit/MINUTES) (toMillis (get-interval config))))
         )
-
-        (Thread/sleep (.. (TimeUnit/MINUTES) (toMillis 10)))
 
         (recur (Timestamp/valueOf (LocalDateTime/now)))
       )
