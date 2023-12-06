@@ -1,4 +1,4 @@
-(defproject rss "1.1.0"
+(defproject rss "1.1.1"
   :description "RSS article reader with Oracle Notification Service support."
   :url "https://github.com/bpr1de/rss-clj"
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
