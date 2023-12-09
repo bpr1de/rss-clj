@@ -1,0 +1,4 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<topic interval='1'>
+    <feed link='http://lorem-rss.herokuapp.com/feed?unit=second&amp;interval=30&amp;length=2'/>
+</topic>
