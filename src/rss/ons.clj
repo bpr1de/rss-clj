@@ -30,7 +30,7 @@
       (.build (NotificationDataPlaneClient/builder)
               (.build (InstancePrincipalsAuthenticationDetailsProvider/builder)))
 
-      (println "Unrecognized notification method; will print only.")
+      (println "Unrecognized notification method; will print only")
       )
     (catch IOException e
       (println (str "Unable to set up notification method: " (.getMessage e)))

@@ -56,7 +56,7 @@
    [xml]
    "Return the polling interval from the configuration, or a default.
     Minimum interval is 1 minute."
-   (let [v (and (= (:tag xml) :topic) (:interval (:attrs xml)))]
+   (let [v (and xml (= (:tag xml) :topic) (:interval (:attrs xml)))]
      (max 1 (Integer/parseInt (if (nil? v) "10" v)))
      )
    )
@@ -90,7 +90,7 @@
     (println (str "Attempting to read '" config-path "'"))
     (xml/parse config-path)
     (catch IOException e
-      (println (str "Error reading configuration '" config-path "': " (.getMessage e)))
+      (println (str "Error reading configuration '" config-path "': "(.getMessage e)))
       )
     )
   )
@@ -102,23 +102,25 @@
   (let [config-path (apply get-config-path args)]
 
     ;; Loop indefinitely, only notifying for new articles.
-    (loop [previous-time (Timestamp/valueOf ^LocalDateTime
-                              (.. (LocalDateTime/now) (minusDays 7)))]
+    (loop [posted-since (Timestamp/valueOf
+                          ^LocalDateTime (.. (LocalDateTime/now) (minusDays 7)))
+           current-time (Timestamp/valueOf
+                       (LocalDateTime/now))]
 
       (let [config (read-config config-path)
             notification-client (rss.ons/make-client (get-client-type config))]
 
         ;; If there are no feeds in the configuration, just skip this cycle.
         (when (nil? (first (get-feeds config)))
-          (println "Warning: no feeds in the configuration.")
+          (println "Warning: no feeds in the configuration")
           )
 
         (doseq [feed (get-feeds config)]
           (try
-            (println (str "Checking feed " feed "..."))
+            (println (str "[" current-time "] Checking feed " feed "..."))
             (doseq [article (parse-feed (xml/parse feed))]
               (if (valid-article? article)
-                (when (< 0 (.compareTo (:date article) previous-time))
+                (when (< 0 (.compareTo (:date article) posted-since))
                   (rss.ons/notify notification-client (get-topic config) article)
                   )
                 (println (str "Invalid article: " article))
@@ -133,7 +135,8 @@
         (Thread/sleep (.. (TimeUnit/MINUTES) (toMillis (get-interval config))))
         )
 
-        (recur (Timestamp/valueOf (LocalDateTime/now)))
+      ;; Advance the time window.
+      (recur current-time (Timestamp/valueOf (LocalDateTime/now)))
       )
     )
   )
