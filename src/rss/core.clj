@@ -105,7 +105,7 @@
     (loop [posted-since (Timestamp/valueOf
                           ^LocalDateTime (.. (LocalDateTime/now) (minusDays 7)))
            current-time (Timestamp/valueOf
-                       (LocalDateTime/now))]
+                          (LocalDateTime/now))]
 
       (let [config (read-config config-path)
             notification-client (rss.ons/make-client (get-client-type config))]
