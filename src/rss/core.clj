@@ -132,6 +132,7 @@
               )
             )
           )
+        (println (str "Sleeping for " (get-interval config) " minutes"))
         (Thread/sleep (.. (TimeUnit/MINUTES) (toMillis (get-interval config))))
         )
 
