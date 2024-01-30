@@ -8,7 +8,9 @@
   (:import (java.io IOException)
            (com.oracle.bmc ConfigFileReader)
            (com.oracle.bmc.auth ConfigFileAuthenticationDetailsProvider
-                                InstancePrincipalsAuthenticationDetailsProvider)
+                                InstancePrincipalsAuthenticationDetailsProvider
+                                ResourcePrincipalAuthenticationDetailsProvider
+                                )
            (com.oracle.bmc.ons NotificationDataPlaneClient)
            (com.oracle.bmc.ons.model MessageDetails)
            (com.oracle.bmc.ons.requests PublishMessageRequest)
@@ -29,6 +31,10 @@
       "instance"
       (.build (NotificationDataPlaneClient/builder)
               (.build (InstancePrincipalsAuthenticationDetailsProvider/builder)))
+
+      "resource"
+      (.build (NotificationDataPlaneClient/builder)
+              (.build (ResourcePrincipalAuthenticationDetailsProvider/builder)))
 
       (println "Unrecognized notification method; will print only")
       )
