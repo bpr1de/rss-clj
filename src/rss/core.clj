@@ -134,6 +134,9 @@
           )
         (println (str "Sleeping for " (get-interval config) " minutes"))
         (Thread/sleep (.. (TimeUnit/MINUTES) (toMillis (get-interval config))))
+
+        ;; Clean up the notification client.
+        (.close notification-client)
         )
 
       ;; Advance the time window.
