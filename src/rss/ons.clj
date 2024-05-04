@@ -22,20 +22,21 @@
    back to using an instance principal."
   [type]
   (try
-    (case type
-      "file"
+    (cond
+      (= type "file")
       (.build (NotificationDataPlaneClient/builder)
               (ConfigFileAuthenticationDetailsProvider.
                 (ConfigFileReader/parseDefault)))
 
-      "instance"
+      (= type "instance")
       (.build (NotificationDataPlaneClient/builder)
               (.build (InstancePrincipalsAuthenticationDetailsProvider/builder)))
 
-      "resource"
+      (or (= type "resource") (System/getenv "OCI_RESOURCE_PRINCIPAL_RPST"))
       (.build (NotificationDataPlaneClient/builder)
               (.build (ResourcePrincipalAuthenticationDetailsProvider/builder)))
 
+      true
       (println "Unrecognized notification method; will print only")
       )
     (catch IOException e
