@@ -1,6 +1,6 @@
 # RSS
 
-A Clojure application designed to parse articles from RSS feeds, and (optionally) publish new articles through the Oracle Notification Service (ONS).
+A Clojure application designed to parse articles from RSS feeds, and (optionally) publish new articles through the Oracle Notification Service (ONS). May be configured using a local configuration file, a remote configuration file retrieved by URL, or a remote configuration file retrieved through Oracle Object Storage Service (OSS).
 
 ## Building
 
@@ -12,17 +12,23 @@ Build with Leiningen e.g. `lein uberjar`
 
 or
 
-`java -jar <this-uberjar.jar> [/path/to/config]`
+`java -jar <this-uberjar.jar> [config]`
 
-The path to the configuration file may be local or a URL. In any case, the configuration file will be re-read on each cycle, so it must be durable.
+The `config` argument may refer to a local filename, URL, or Object Storage notation. In any case, the configuration file will be re-read on each cycle, so it must be durable.
 
-`/path/to/config` may be omitted, in which case the application will first try reading the path from the environment variable `$RSS_CONFIG_PATH`, and failing that, will look for a configuration in `~/.rss`.
+Object Storage notation takes the form:
+
+`oss:<namespace>:<bucket>:<object>`
+
+where `namespace`, `bucket`, and `object` are required parameters, and `region` is optional.
+
+If `config` is omitted, the application will first try reading it from the environment variable `RSS_CONFIG_PATH`, and failing that, will look for a configuration in `~/.rss`.
 
 The config file must be a valid XML file matching the following example format:
 
 ```
 <?xml version='1.0' encoding='UTF-8'?>
-<topic ocid='ocid1.onstopic.phx.your.ocid.here' client='file' interval='15'>
+<topic ons_ocid='ocid1.onstopic.phx.your.ocid.here' interval='15'>
     <feed link='https://alerts.weather.gov/cap/wwaatmget.php?x=WAC033'/>
     <feed link='https://www.nps.gov/feeds/getNewsRSS.htm?id=mora'/>
 </topic>
@@ -30,11 +36,19 @@ The config file must be a valid XML file matching the following example format:
 
 The `interval` is in minutes, and defaults to 10 if omitted.
 
-To use ONS for notifications, define both a topic OCID in the `ocid` attribute and a client type in the `client` attribute of the `topic` tag.  The `ocid` refers to the OCID of your notification topic, and the `client` is a value of `file`, `instance`, or `resource`, for OCI file-based client configuration, instance principal-based client configuration, or resource-principal-based client configuration, respectively.
+To use ONS for notifications, you must define the topic OCID in the `ons_ocid` attribute and have an authorized means of accessing your tenancy.
 
-If the `ocid` or `client` attributes are omitted, articles will be printed to standard output only.
+To access OCI resources (OSS or ONS), the application will attempt to authenticate as follows:
 
-Note that in order to leverage use of ONS, you must have a tenancy configured with an ONS topic defined with one or more subscribers. To use the file-based OCI client, you must have a valid configuration in the `.oci` folder. To use the instance and resource principal-based OCI client, this application must be running on an OCI instance (or container instance) and your tenancy must be configured with a policy to allow the instance to access your topic. See here for guidance: https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm
+1. using a resource-principal if the environment variable `OCI_RESOURCE_PRINCIPAL_RPST` is set;
+1. using an instance-principal if the environment variable `OCI_INSTANCE_PRINCIPAL_IPST` is set *(note that this is not automatically set by OCI instances; you would need to set it manually)*;
+1. configuration-file based authentication e.g. a valid configuration in the `.oci/` folder.
+
+If the `ons_ocid` is omitted or the application cannot authentication to ONS, then articles will be printed to standard output only.
+
+Note that in order to leverage use of ONS, you must have a tenancy configured with an ONS topic defined with one or more subscribers.
+
+Resource and instance principal-based authentication requires that the application be running on an OCI instance (or container instance), and that your tenancy be configured with a policy to allow the instance to access your topic. See here for guidance: https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm
 
 ## Docker
 

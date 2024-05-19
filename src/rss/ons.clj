@@ -5,6 +5,7 @@
 ;; See https://docs.oracle.com/en-us/iaas/pl-sql-sdk/doc/ons-package.html
 ;;
 (ns rss.ons
+  (:require [rss.constants])
   (:import (java.io IOException)
            (com.oracle.bmc ConfigFileReader)
            (com.oracle.bmc.auth ConfigFileAuthenticationDetailsProvider
@@ -18,30 +19,27 @@
  )
 
 (defn make-client
-  "Creates an ONS client first trying local configuration, and then falling
-   back to using an instance principal."
-  [type]
+  "Creates an ONS client using resource principal, instance principal, or
+  file-based authentication details providers."
+  []
   (try
     (cond
-      (= type "file")
-      (.build (NotificationDataPlaneClient/builder)
-              (ConfigFileAuthenticationDetailsProvider.
-                (ConfigFileReader/parseDefault)))
-
-      (= type "instance")
-      (.build (NotificationDataPlaneClient/builder)
-              (.build (InstancePrincipalsAuthenticationDetailsProvider/builder)))
-
-      (or (= type "resource") (System/getenv "OCI_RESOURCE_PRINCIPAL_RPST"))
+      (System/getenv rss.constants/resource-principal-key)
       (.build (NotificationDataPlaneClient/builder)
               (.build (ResourcePrincipalAuthenticationDetailsProvider/builder)))
 
+      (System/getenv rss.constants/instance-principal-key)
+      (.build (NotificationDataPlaneClient/builder)
+              (.build (InstancePrincipalsAuthenticationDetailsProvider/builder)))
+
       true
-      (println "Unrecognized notification method; will print only")
+      (.build (NotificationDataPlaneClient/builder)
+              (ConfigFileAuthenticationDetailsProvider.
+                (ConfigFileReader/parseDefault)))
       )
     (catch IOException e
-      (println (str "Unable to set up notification method: " (.getMessage e)))
-      (System/exit -1)
+      (println (str "Unable to set up notification method: "
+                    (.getMessage e) "; will print only."))
       )
     )
   )

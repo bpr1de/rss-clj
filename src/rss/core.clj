@@ -1,5 +1,6 @@
 (ns rss.core
   (:require [rss.ons])
+  (:require [rss.oss])
   (:require [rss.feeds.atom])
   (:require [rss.feeds.rss])
   (:require [clojure.xml :as xml])
@@ -38,17 +39,9 @@
 
 (defn get-topic
   [xml]
-  "Return the topic OCID from the configuration."
+  "Return the ONS topic OCID from the configuration."
   (if (= (:tag xml) :topic)
-    (:ocid (:attrs xml))
-    )
-  )
-
-(defn get-client-type
-  [xml]
-  "Return the notification client type from the configuration."
-  (if (= (:tag xml) :topic)
-    (:client (:attrs xml))
+    (:ons_ocid (:attrs xml))
     )
   )
 
@@ -75,22 +68,35 @@
   [& args]
   "Determine a config path from the command-line arguments and environment:
    1.) if a command-line argument was given, use it; else
-   2.) if the environment variable $RSS_CONFIG_PATH is set, use it; else
+   2.) if the config path environment variable is set, use it; else
    3.) try the user's own ~/.rss file;"
   (or (first args)
-      (System/getenv "RSS_CONFIG_PATH")
+      (System/getenv rss.constants/rss-config-path-key)
       (str (System/getProperty "user.home") "/.rss")
       )
   )
 
+(defn get-config-reference
+  [name]
+  "Get a readable reference to the configuration specified by the name.
+   For Object Storage paths (prefixed by \"oss:\"), return an InputStream
+   that can be read directly. Other patterns are assumed to be local
+   filenames or remote URLs that can be read as-is."
+  (if (re-matches #"^oss:.*" name)
+    (rss.oss/get-handle-for (next (clojure.string/split name #":")))
+    name
+    )
+  )
+
 (defn read-config
   [config-path]
-  "Attempt to read the XML config file specified by the path (local or remote)."
+  "Attempt to read and parse the XML config file specified by the path."
   (try
     (println (str "Attempting to read '" config-path "'"))
-    (xml/parse config-path)
+    (xml/parse (get-config-reference config-path))
     (catch IOException e
-      (println (str "Error reading configuration '" config-path "': "(.getMessage e)))
+      (println (str "Error reading configuration '" config-path "': "
+                    (.getMessage e)))
       )
     )
   )
@@ -108,7 +114,7 @@
                           (LocalDateTime/now))]
 
       (let [config (read-config config-path)
-            notification-client (rss.ons/make-client (get-client-type config))]
+            notification-client (rss.ons/make-client)]
 
         ;; If there are no feeds in the configuration, just skip this cycle.
         (when (nil? (first (get-feeds config)))
