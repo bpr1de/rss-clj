@@ -5,8 +5,7 @@
   (:require [rss.feeds.rss])
   (:require [clojure.xml :as xml])
   (:import (java.io IOException)
-           (java.sql Timestamp)
-           (java.time LocalDateTime)
+           (java.time Clock LocalDateTime)
            (java.util.concurrent TimeUnit)
            )
   (:gen-class)
@@ -34,7 +33,7 @@
 (defn valid-article?
   [article]
   "Tests whether the article we parsed is suitable for acting on."
-  (every? (complement nil?) (vals article))
+  (and article (every? (complement nil?) (vals article)))
   )
 
 (defn get-topic
@@ -107,29 +106,33 @@
    publishing each article to the configured notification client."
   (let [config-path (apply get-config-path args)]
 
-    ;; Loop indefinitely, only notifying for new articles.
-    (loop [posted-since (Timestamp/valueOf
-                          ^LocalDateTime (.. (LocalDateTime/now) (minusDays 7)))
-           current-time (Timestamp/valueOf
-                          (LocalDateTime/now))]
+    ;; Loop indefinitely, only notifying for new articles. On the first
+    ;; iteration, consider everything posted in the last week as being
+    ;; "previously unseen".
+    (loop [current-time (LocalDateTime/now (Clock/systemUTC))
+           last-notification (.. current-time (minusDays 7))]
 
+      ;; Reload the config and generate a new notification client on each loop.
       (let [config (read-config config-path)
             notification-client (rss.ons/make-client)]
 
-        ;; If there are no feeds in the configuration, just skip this cycle.
+        ;; If there are no feeds in the configuration, just warn about it.
         (when (nil? (first (get-feeds config)))
           (println "Warning: no feeds in the configuration")
           )
 
+        ;; For each feed in the config...
         (doseq [feed (get-feeds config)]
           (try
             (println (str "[" current-time "] Checking feed " feed "..."))
+            ;; For each article in the feed...
             (doseq [article (parse-feed (xml/parse feed))]
               (if (valid-article? article)
-                (when (< 0 (.compareTo (:date article) posted-since))
+                ;; If this was posted since the last iteration, notify.
+                (when (.isAfter (:date article) last-notification)
                   (rss.ons/notify notification-client (get-topic config) article)
                   )
-                (println (str "Invalid article: " article))
+                (println (str "Invalid article: " (or article "(null)")))
                 )
               )
 
@@ -138,6 +141,7 @@
               )
             )
           )
+
         (println (str "Sleeping for " (get-interval config) " minutes"))
         (Thread/sleep (.. (TimeUnit/MINUTES) (toMillis (get-interval config))))
 
@@ -146,7 +150,7 @@
         )
 
       ;; Advance the time window.
-      (recur current-time (Timestamp/valueOf (LocalDateTime/now)))
+      (recur current-time (LocalDateTime/now (Clock/systemUTC)))
       )
     )
   )
