@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0" xml:base="https://wsdot.wa.gov/">
+  <channel>
+    <title>News</title>
+    <link>https://wsdot.wa.gov/</link>
+    <description>WSDOT News</description>
+    <language>en</language>
+    
+    <item>
+  <title>North Spokane Corridor and Wellesley Avenue to close for one month starting Tuesday, May 28</title>
+  <link>https://wsdot.wa.gov/about/news/2024/north-spokane-corridor-and-wellesley-avenue-close-one-month-starting-tuesday-may-28</link>
+  <description>SPOKANE – Due to the late fall opening of the new section of freeway, not all the work was completed when the Wellesley Avenue Interchange opened to traffic. To complete the work, contractor crews will now close Wellesley Avenue starting Tuesday, May 28, between Market Street and Freya Street. Crews will also close the northbound lanes of the North Spokane Corridor between Wellesley Avenue and the Freya Street interchange. The southbound lanes closed earlier this week on Monday, May 20.</description>
+  <pubDate>Wed, 22 May 2024 09:40:30 -0700</pubDate>
+    <dc:creator>OvertRy@WSDOT.WA.GOV</dc:creator>
+    <guid isPermaLink="true">https://wsdot.wa.gov/about/news/2024/north-spokane-corridor-and-wellesley-avenue-close-one-month-starting-tuesday-may-28</guid>
+    </item>
+<item>
+  <title>SR 123/Cayuse Pass scheduled to reopen May 24 and SR 410 Chinook Pass to remain closed</title>
+  <link>https://wsdot.wa.gov/about/news/2024/sr-123-cayuse-pass-scheduled-reopen-may-24-and-sr-410-chinook-pass-remain-closed</link>
+  <description>Every year, the Washington State Department of Transportation works to reopen State Route 410/Chinook Pass and State Route 123/Cayuse Pass in time for Memorial Day weekend. This year, a washout and the timing of repairs will bring a partial opening. </description>
+  <pubDate>Wed, 22 May 2024 04:38:40 -0700</pubDate>
+    <dc:creator>aishad@wsdot.wa.gov</dc:creator>
+    <guid isPermaLink="true">https://wsdot.wa.gov/about/news/2024/sr-123-cayuse-pass-scheduled-reopen-may-24-and-sr-410-chinook-pass-remain-closed</guid>
+    </item>
+  </channel>
+</rss>
