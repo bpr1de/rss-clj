@@ -1,7 +1,16 @@
 (ns rss.feeds.atom
   (:use [rss.article])
   (:require [clojure.instant :as instant])
-  (:import (java.time ZoneId)))
+  (:import (java.time ZoneOffset)))
+
+(defn parse-date
+  [s]
+  "Attempt to parse the date or return nil. Dates are formatted e.g.
+   2024-05-23T00:53:14+00:00"
+  (-> (instant/read-instant-date s)
+      (.toInstant) (.atZone (ZoneOffset/UTC))
+      (.toLocalDateTime))
+  )
 
 (defn make-article
   [xml]
@@ -22,8 +31,7 @@
                (:title atom-map)
                (:summary atom-map)
                (:link atom-map)
-               (-> (instant/read-instant-date (:updated atom-map))
-                   (.toInstant) (.atZone (ZoneId/of "UTC"))
-                   (.toLocalDateTime)))
+               (parse-date (:updated atom-map))
+               )
     )
   )

@@ -5,13 +5,12 @@
 ;; See https://docs.oracle.com/en-us/iaas/pl-sql-sdk/doc/ons-package.html
 ;;
 (ns rss.ons
-  (:require [rss.constants])
+  (:require [rss.constants :as const])
   (:import (java.io IOException)
            (com.oracle.bmc ConfigFileReader)
            (com.oracle.bmc.auth ConfigFileAuthenticationDetailsProvider
                                 InstancePrincipalsAuthenticationDetailsProvider
-                                ResourcePrincipalAuthenticationDetailsProvider
-                                )
+                                ResourcePrincipalAuthenticationDetailsProvider)
            (com.oracle.bmc.ons NotificationDataPlaneClient)
            (com.oracle.bmc.ons.model MessageDetails)
            (com.oracle.bmc.ons.requests PublishMessageRequest)
@@ -24,11 +23,11 @@
   []
   (try
     (cond
-      (System/getenv rss.constants/resource-principal-key)
+      (System/getenv const/resource-principal-key)
       (.build (NotificationDataPlaneClient/builder)
               (.build (ResourcePrincipalAuthenticationDetailsProvider/builder)))
 
-      (System/getenv rss.constants/instance-principal-key)
+      (System/getenv const/instance-principal-key)
       (.build (NotificationDataPlaneClient/builder)
               (.build (InstancePrincipalsAuthenticationDetailsProvider/builder)))
 

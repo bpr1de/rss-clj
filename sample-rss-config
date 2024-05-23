@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- topic ons_ocid='ocid1.onstopic.oc1.phx.aaaaaaa......' interval='10' -->
-<topic interval='5'>
+<topic interval='1'>
     <feed link='https://api.weather.gov/alerts/active.atom?zone=WAC033'/>
     <feed link='https://www.nps.gov/feeds/getNewsRSS.htm?id=mora'/>
     <feed link='https://www.nps.gov/feeds/getNewsRSS.htm?id=noca'/>

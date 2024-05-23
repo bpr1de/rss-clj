@@ -1,13 +1,15 @@
 (ns rss.core
-  (:require [rss.ons])
-  (:require [rss.oss])
-  (:require [rss.feeds.atom])
-  (:require [rss.feeds.rss])
-  (:require [clojure.xml :as xml])
+  (:require [clojure.xml :as xml]
+            [rss.constants :as const]
+            [rss.feeds.atom]
+            [rss.feeds.rss]
+            [rss.ons]
+            [rss.oss])
   (:import (java.io IOException)
            (java.time Clock LocalDateTime)
-           (java.util.concurrent TimeUnit)
-           )
+           (java.time ZoneOffset)
+           (java.time.temporal ChronoUnit)
+           (java.util.concurrent TimeUnit))
   (:gen-class)
   )
 
@@ -70,7 +72,7 @@
    2.) if the config path environment variable is set, use it; else
    3.) try the user's own ~/.rss file;"
   (or (first args)
-      (System/getenv rss.constants/rss-config-path-key)
+      (System/getenv const/rss-config-path-key)
       (str (System/getProperty "user.home") "/.rss")
       )
   )
@@ -100,6 +102,12 @@
     )
   )
 
+(defn now
+  []
+  "Get the current time in UTC."
+  (.toInstant (LocalDateTime/now) (ZoneOffset/UTC))
+  )
+
 (defn -main
   [& args]
   "Loop forever reading an XML config file and the RSS feeds described in it,
@@ -109,8 +117,8 @@
     ;; Loop indefinitely, only notifying for new articles. On the first
     ;; iteration, consider everything posted in the last week as being
     ;; "previously unseen".
-    (loop [current-time (LocalDateTime/now (Clock/systemUTC))
-           last-notification (.. current-time (minusDays 7))]
+    (loop [current-cycle (now)
+           last-cycle (.minus current-cycle 7 ChronoUnit/DAYS)]
 
       ;; Reload the config and generate a new notification client on each loop.
       (let [config (read-config config-path)
@@ -124,12 +132,12 @@
         ;; For each feed in the config...
         (doseq [feed (get-feeds config)]
           (try
-            (println (str "[" current-time "] Checking feed " feed "..."))
+            (println (str "[" current-cycle "] Checking feed " feed "..."))
             ;; For each article in the feed...
             (doseq [article (parse-feed (xml/parse feed))]
               (if (valid-article? article)
                 ;; If this was posted since the last iteration, notify.
-                (when (.isAfter (:date article) last-notification)
+                (when (.isAfter (:date article) last-cycle)
                   (rss.ons/notify notification-client (get-topic config) article)
                   )
                 (println (str "Invalid article: " (or article "(null)")))
@@ -150,7 +158,7 @@
         )
 
       ;; Advance the time window.
-      (recur current-time (LocalDateTime/now (Clock/systemUTC)))
+      (recur (now) current-cycle)
       )
     )
   )
