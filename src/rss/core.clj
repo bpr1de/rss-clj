@@ -13,6 +13,18 @@
   (:gen-class)
   )
 
+(defn now
+  []
+  "Get the current time in UTC."
+  (.toInstant (LocalDateTime/now) (ZoneOffset/UTC))
+  )
+
+(defn out
+  [& args]
+  "Timestamp-prefixed printer."
+  (println (str "[" (now) "] " (apply str args)))
+  )
+
 (defn parse-feed
   [xml]
   "Parse an XML feed according to its type, either RSS 2.0 or Atom, and return
@@ -27,7 +39,7 @@
       ;; Parse Atom feeds
       :feed (for [e (:content xml) :when (= (:tag e) :entry)]
               (rss.feeds.atom/make-article (:content e)))
-      (println (str "Unsupported feed type: " tag))
+      (out "Unsupported feed type: " tag)
       )
     )
   )
@@ -93,32 +105,26 @@
   [config-path]
   "Attempt to read and parse the XML config file specified by the path."
   (try
-    (println (str "Attempting to read '" config-path "'"))
+    (out "Attempting to read '" config-path "'")
     (xml/parse (get-config-reference config-path))
     (catch IOException e
-      (println (str "Error reading configuration '" config-path "': "
-                    (.getMessage e)))
+      (out "Error reading configuration '" config-path "': " (.getMessage e))
       )
     )
-  )
-
-(defn now
-  []
-  "Get the current time in UTC."
-  (.toInstant (LocalDateTime/now) (ZoneOffset/UTC))
   )
 
 (defn -main
   [& args]
   "Loop forever reading an XML config file and the RSS feeds described in it,
-   publishing each article to the configured notification client."
-  (let [config-path (apply get-config-path args)]
+   publishing each article to the configured notification client. On startup,
+   notify for all articles posted in the last week."
+  (let [config-path (apply get-config-path args)
+        last-cycle (atom (.minus (now) 7 ChronoUnit/DAYS))]
 
-    ;; Loop indefinitely, only notifying for new articles. On the first
-    ;; iteration, consider everything posted in the last week as being
-    ;; "previously unseen".
-    (loop [current-cycle (now)
-           last-cycle (.minus current-cycle 7 ChronoUnit/DAYS)]
+    ;; Loop indefinitely.
+    (loop [since (deref last-cycle)]
+
+      (reset! last-cycle (now))
 
       ;; Reload the config and generate a new notification client on each loop.
       (let [config (read-config config-path)
@@ -126,31 +132,33 @@
 
         ;; If there are no feeds in the configuration, just warn about it.
         (when (nil? (first (get-feeds config)))
-          (println "Warning: no feeds in the configuration")
+          (out "Warning: no feeds in the configuration")
           )
+
+        (out "Checking for articles posted since: " since)
 
         ;; For each feed in the config...
         (doseq [feed (get-feeds config)]
           (try
-            (println (str "[" current-cycle "] Checking feed " feed "..."))
+            (out "Checking feed " feed "...")
             ;; For each article in the feed...
             (doseq [article (parse-feed (xml/parse feed))]
               (if (valid-article? article)
                 ;; If this was posted since the last iteration, notify.
-                (when (.isAfter (:date article) last-cycle)
+                (when (.isAfter (:date article) since)
                   (rss.ons/notify notification-client (get-topic config) article)
                   )
-                (println (str "Invalid article: " (or article "(null)")))
+                (out "Invalid article: " (or article "(null)"))
                 )
               )
 
             (catch Exception e
-              (println (str "Failed to read feed: " feed ": " (.getMessage e)))
+              (out "Failed to read feed: " feed ": " (.getMessage e))
               )
             )
           )
 
-        (println (str "Sleeping for " (get-interval config) " minutes"))
+        (out "Sleeping for " (get-interval config) " minutes")
         (Thread/sleep (.. (TimeUnit/MINUTES) (toMillis (get-interval config))))
 
         ;; Clean up the notification client.
@@ -158,7 +166,7 @@
         )
 
       ;; Advance the time window.
-      (recur (now) current-cycle)
+      (recur (deref last-cycle))
       )
     )
   )
