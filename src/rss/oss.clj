@@ -41,11 +41,11 @@
   file-based authentication details providers."
   [oss-location]
   (let [client (make-client)
-        request (.. GetObjectRequest (builder)
-                    (namespaceName (nth oss-location 0)) ; make record
-                    (bucketName (nth oss-location 1))
-                    (objectName (nth oss-location 2))
-                    (build))
+        request (-> (GetObjectRequest/builder)
+                    (.namespaceName (nth oss-location 0))
+                    (.bucketName (nth oss-location 1))
+                    (.objectName (nth oss-location 2))
+                    (.build))
         response (.getObject client request)
         stream (.getInputStream response)]
     stream))

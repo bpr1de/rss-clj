@@ -43,12 +43,12 @@
   [client topic article]
   (println (str article))
   (when (and client topic)
-    (let [message (.. MessageDetails (builder)
-                      (title (format "RSS: %s" (:title article)))
-                      (body (str article))
-                      (build))
-          request (.. PublishMessageRequest (builder)
-                      (topicId topic)
-                      (messageDetails message)
-                      (build))]
+    (let [message (-> (MessageDetails/builder)
+                      (.title (format "RSS: %s" (:title article)))
+                      (.body (str article))
+                      (.build))
+          request (-> (PublishMessageRequest/builder)
+                      (.topicId topic)
+                      (.messageDetails message)
+                      (.build))]
       (.publishMessage client request))))
