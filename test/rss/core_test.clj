@@ -26,6 +26,14 @@
            "2024-05-22T20:52:01+04:30"))
            "2024-05-22T16:22:01"))))
 
+;; Validate that articles' validity can be correctly ascertained.
+(deftest article-validity
+  (testing "Checking valid/invalid article handling"
+    (let [valid-article (parse-feed (xml/parse "test/rss-feed.xml"))
+          invalid-articles (parse-feed (xml/parse "test/invalid-rss-feed.xml"))]
+      (is (valid-article? (first valid-article)))
+      (is (every? #(not (valid-article? %)) invalid-articles)))))
+
 ;; Parse sample RSS unit test data.
 (deftest parse-rss-feed
   (testing "Parse RSS feed"
