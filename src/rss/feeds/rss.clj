@@ -1,7 +1,7 @@
 (ns rss.feeds.rss
   (:use [rss.article])
   (:import (java.time ZonedDateTime)
-           (java.time.format DateTimeFormatter)))
+           (java.time.format DateTimeFormatter DateTimeParseException)))
 
 ;; There are various date forms used with RSS; we need to try them all.
 (def date-formats [
@@ -21,7 +21,7 @@
     (if (empty? f)
       nil
       (or (try (.toInstant (ZonedDateTime/parse s (first f)))
-               (catch Exception e nil))
+               (catch DateTimeParseException e nil))
           (recur (next f))
           )
       )

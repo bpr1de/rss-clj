@@ -6,7 +6,7 @@
             [rss.ons]
             [rss.oss])
   (:import (java.io IOException)
-           (java.time Clock LocalDateTime)
+           (java.time LocalDateTime)
            (java.time ZoneOffset)
            (java.time.temporal ChronoUnit)
            (java.util.concurrent TimeUnit))
@@ -159,7 +159,7 @@
           )
 
         (out "Sleeping for " (get-interval config) " minutes")
-        (Thread/sleep (.. (TimeUnit/MINUTES) (toMillis (get-interval config))))
+        (Thread/sleep (-> (TimeUnit/MINUTES) (.toMillis (get-interval config))))
 
         ;; Clean up the notification client.
         (.close notification-client)
