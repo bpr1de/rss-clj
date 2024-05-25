@@ -1,5 +1,4 @@
-(ns rss.constants
-  )
+(ns rss.constants)
 
 ;; Environment variable name used to read the config path.
 (def rss-config-path-key "RSS_CONFIG_PATH")

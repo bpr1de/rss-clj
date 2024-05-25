@@ -11,9 +11,7 @@
                                 ResourcePrincipalAuthenticationDetailsProvider
                                 )
            (com.oracle.bmc.objectstorage ObjectStorageClient)
-           (com.oracle.bmc.objectstorage.requests GetObjectRequest)
-           )
- )
+           (com.oracle.bmc.objectstorage.requests GetObjectRequest)))
 
 (defn make-client
   "Creates an OSS client using resource principal, instance principal, or
@@ -21,25 +19,22 @@
   []
   (try
     (cond
+      ;; Resource Principals
       (System/getenv rss.constants/resource-principal-key)
       (.build (ObjectStorageClient/builder)
               (.build (ResourcePrincipalAuthenticationDetailsProvider/builder)))
-
+      ;; Instance Principals
       (System/getenv rss.constants/instance-principal-key)
       (.build (ObjectStorageClient/builder)
               (.build (InstancePrincipalsAuthenticationDetailsProvider/builder)))
-
+      ;; Local config file
       true
       (.build (ObjectStorageClient/builder)
               (ConfigFileAuthenticationDetailsProvider.
-                (ConfigFileReader/parseDefault)))
-      )
+                (ConfigFileReader/parseDefault))))
     (catch IOException e
       (println (str "Unable to create client for Object Storage Service: "
-                    (.getMessage e)))
-      )
-    )
-  )
+                    (.getMessage e))))))
 
 (defn get-handle-for
   "Creates an OSS client using resource principal, instance principal, or
@@ -53,6 +48,4 @@
                     (build))
         response (.getObject client request)
         stream (.getInputStream response)]
-    stream
-    )
-  )
+    stream))

@@ -1,5 +1,5 @@
 (ns rss.feeds.atom
-  (:use [rss.article])
+  (:require [rss.article :refer :all])
   (:require [clojure.instant :as instant])
   (:import (java.time ZoneOffset)))
 
@@ -9,8 +9,7 @@
    2024-05-23T00:53:14+00:00"
   (-> (instant/read-instant-date s)
       (.toInstant) (.atZone (ZoneOffset/UTC))
-      (.toLocalDateTime))
-  )
+      (.toLocalDateTime)))
 
 (defn make-article
   [xml]
@@ -18,20 +17,14 @@
    Dates are formatted according to RFC 3339.
    See https://validator.w3.org/feed/docs/atom.html"
   (let [atom-keys #{:title :summary :updated :link}
-        atom-map (into {}
-                       (for [m xml :when (atom-keys (:tag m))]
-                         (if (= (:tag m) :link)
-                           {(:tag m) (:href (:attrs m))}   ;; link is under attrs
-                           {(:tag m) (first (:content m))} ;; everything else is under content
-                           )
-                         )
-                       )
-        ]
+        atom-map (into {} (for [m xml :when (atom-keys (:tag m))]
+                            (if (= (:tag m) :link)
+                              ;; link is under attrs
+                              {(:tag m) (:href (:attrs m))}
+                              ;; everything else is under content
+                              {(:tag m) (first (:content m))})))]
     (->Article :atom
                (:title atom-map)
                (:summary atom-map)
                (:link atom-map)
-               (parse-date (:updated atom-map))
-               )
-    )
-  )
+               (parse-date (:updated atom-map)))))

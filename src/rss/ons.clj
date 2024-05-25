@@ -13,9 +13,7 @@
                                 ResourcePrincipalAuthenticationDetailsProvider)
            (com.oracle.bmc.ons NotificationDataPlaneClient)
            (com.oracle.bmc.ons.model MessageDetails)
-           (com.oracle.bmc.ons.requests PublishMessageRequest)
-    )
- )
+           (com.oracle.bmc.ons.requests PublishMessageRequest)))
 
 (defn make-client
   "Creates an ONS client using resource principal, instance principal, or
@@ -23,25 +21,22 @@
   []
   (try
     (cond
+      ;; Resource Principals
       (System/getenv const/resource-principal-key)
       (.build (NotificationDataPlaneClient/builder)
               (.build (ResourcePrincipalAuthenticationDetailsProvider/builder)))
-
+      ;; Instance Principals
       (System/getenv const/instance-principal-key)
       (.build (NotificationDataPlaneClient/builder)
               (.build (InstancePrincipalsAuthenticationDetailsProvider/builder)))
-
+      ;; Local config file
       true
       (.build (NotificationDataPlaneClient/builder)
               (ConfigFileAuthenticationDetailsProvider.
-                (ConfigFileReader/parseDefault)))
-      )
+                (ConfigFileReader/parseDefault))))
     (catch IOException e
       (println (str "Unable to set up notification method: "
-                    (.getMessage e) "; will print only."))
-      )
-    )
-  )
+                    (.getMessage e) "; will print only.")))))
 
 (defn notify
   "Send out notifications for the article, using ONS if a topic is defined."
@@ -56,7 +51,4 @@
                       (topicId topic)
                       (messageDetails message)
                       (build))]
-      (.publishMessage client request)
-      )
-    )
-  )
+      (.publishMessage client request))))

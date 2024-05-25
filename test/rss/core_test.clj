@@ -1,8 +1,7 @@
 (ns rss.core-test
   (:require [clojure.xml :as xml])
   (:require [clojure.test :refer :all]
-            [rss.core :refer :all])
-  )
+            [rss.core :refer :all]))
 
 ;; Test parsing of RSS dates for various formats.
 (deftest parse-rss-date
@@ -12,9 +11,7 @@
            "2024-05-23T03:52:30Z"))
     (is (= (str (rss.feeds.rss/parse-date
            "Wed, 22 May 2024 06:13:59 EST"))
-           "2024-05-22T10:13:59Z"))
-    )
-  )
+           "2024-05-22T10:13:59Z"))))
 
 ;; Test parsing of ATOM dates.
 (deftest parse-atom-date
@@ -27,9 +24,7 @@
            "2024-05-23T00:52:01"))
     (is (= (str (rss.feeds.atom/parse-date
            "2024-05-22T20:52:01+04:30"))
-           "2024-05-22T16:22:01"))
-    )
-  )
+           "2024-05-22T16:22:01"))))
 
 ;; Parse sample RSS unit test data.
 (deftest parse-rss-feed
@@ -53,10 +48,7 @@
                   "closed")))
       (is (= (str (:date (nth articles 1)))
              "2024-05-22T11:38:40Z"))
-      (is (= (:type (nth articles 1)) :rss))
-      )
-    )
-  )
+      (is (= (:type (nth articles 1)) :rss)))))
 
 ;; Parse sample ATOM unit test data.
 (deftest parse-atom-feed
@@ -78,7 +70,4 @@
                   "b5b8e1443ad052cbcebb03938824c1d699455e55.001.1.cap")))
       (is (= (str (:date (nth articles 1)))
              "2024-05-23T00:52"))
-      (is (= (:type (nth articles 1)) :atom))
-      )
-    )
-  )
+      (is (= (:type (nth articles 1)) :atom)))))
