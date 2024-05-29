@@ -7,7 +7,7 @@
             [rss.oss])
   (:import (java.io IOException)
            (java.time LocalDateTime)
-           (java.time ZoneOffset)
+           (java.time ZoneId ZoneOffset)
            (java.time.temporal ChronoUnit)
            (java.util.concurrent TimeUnit))
   (:gen-class))
@@ -15,7 +15,7 @@
 (defn now
   []
   "Get the current time in UTC."
-  (.toInstant (LocalDateTime/now) (ZoneOffset/UTC)))
+  (.toInstant (LocalDateTime/now (ZoneId/of "UTC")) (ZoneOffset/UTC)))
 
 (defn out
   [& args]

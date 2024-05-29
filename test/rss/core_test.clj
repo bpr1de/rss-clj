@@ -18,13 +18,13 @@
   (testing "Parsing ATOM dates"
     (is (= (str (rss.feeds.atom/parse-date
            "2024-05-23T00:53:14+00:00"))
-           "2024-05-23T00:53:14"))
+           "2024-05-23T00:53:14Z"))
     (is (= (str (rss.feeds.atom/parse-date
            "2024-05-22T20:52:01-04:00"))
-           "2024-05-23T00:52:01"))
+           "2024-05-23T00:52:01Z"))
     (is (= (str (rss.feeds.atom/parse-date
            "2024-05-22T20:52:01+04:30"))
-           "2024-05-22T16:22:01"))))
+           "2024-05-22T16:22:01Z"))))
 
 ;; Validate that articles' validity can be correctly ascertained.
 (deftest article-validity
@@ -67,7 +67,7 @@
              (str "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0"
              ".601ab091b19b7cc3ccf16c56e68e88c53ff3d7c3.001.1.cap")))
       (is (= (str (:date (nth articles 0)))
-             "2024-05-23T00:52"))
+             "2024-05-23T00:52:00Z"))
       (is (= (:title (nth articles 0))
              (str "Flood Warning issued May 22 at 8:52PM EDT until May 26 at "
                   "1:00PM EDT by NWS Tallahassee FL")))
@@ -77,5 +77,5 @@
              (str "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0."
                   "b5b8e1443ad052cbcebb03938824c1d699455e55.001.1.cap")))
       (is (= (str (:date (nth articles 1)))
-             "2024-05-23T00:52"))
+             "2024-05-23T00:52:00Z"))
       (is (= (:type (nth articles 1)) :atom)))))

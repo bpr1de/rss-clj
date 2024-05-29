@@ -9,7 +9,7 @@
    2024-05-23T00:53:14+00:00"
   (-> (instant/read-instant-date s)
       (.toInstant) (.atZone (ZoneOffset/UTC))
-      (.toLocalDateTime)))
+      (.toInstant)))
 
 (defn make-article
   [xml]
