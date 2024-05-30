@@ -38,11 +38,6 @@
               (rss.feeds.atom/make-article (:content e)))
       (out "Unsupported feed type: " tag))))
 
-(defn valid-article?
-  [article]
-  "Tests whether the article we parsed is suitable for acting on."
-  (and article (every? (complement nil?) (vals article))))
-
 (defn get-topic
   [xml]
   "Return the ONS topic OCID from the configuration."
@@ -74,14 +69,14 @@
       (str (System/getProperty "user.home") "/.rss")))
 
 (defn get-config-reference
-  [name]
-  "Get a readable reference to the configuration specified by the name.
+  [path]
+  "Get a readable reference to the configuration specified by the path.
    For Object Storage paths (prefixed by \"oss:\"), return an InputStream
    that can be read directly. Other patterns are assumed to be local
    filenames or remote URLs that can be read as-is."
-  (if (re-matches #"^oss:.*" name)
-    (rss.oss/get-handle-for (next (clojure.string/split name #":")))
-    name))
+  (if (re-matches #"^oss:.*" path)
+    (rss.oss/get-stream-for (next (clojure.string/split path #":")))
+    path))
 
 (defn read-config
   [config-path]
@@ -98,43 +93,46 @@
    publishing each article to the configured notification client. On startup,
    notify for all articles posted in the last week."
   (let [config-path (apply get-config-path args)
-        last-cycle (atom (.minus (now) 7 ChronoUnit/DAYS))]
+        article-cache (rss.article/make-cache)]
 
     ;; Loop indefinitely.
-    (loop [since (deref last-cycle)]
-
-      (reset! last-cycle (now))
+    (while true
 
       ;; Reload the config and generate a new notification client on each loop.
       (let [config (read-config config-path)
-            notification-client (rss.ons/make-client)]
+            topic (get-topic config)
+            ons-client (rss.ons/make-client)
+            oldest (.minus (now) 7 ChronoUnit/DAYS)
+            expired? #(.isBefore (:date %) oldest)]
 
-        ;; If there are no feeds in the configuration, just warn about it.
-        (when (nil? (first (get-feeds config)))
+        ;; Prune the cache.
+        (rss.article/prune-cache expired? article-cache)
+        (out "Article cache contains " (count (deref article-cache)) " entries.")
+
+        ;; Warn if there are no feeds in the configuration.
+        (when (empty? (get-feeds config))
           (out "Warning: no feeds in the configuration"))
-
-        (out "Checking for articles posted since: " since)
 
         ;; For each feed in the config...
         (doseq [feed (get-feeds config)]
           (try
             (out "Checking feed " feed "...")
-            ;; For each article in the feed...
-            (doseq [article (parse-feed (xml/parse feed))]
-              (if (valid-article? article)
-                ;; If this was posted since the last iteration, notify.
-                (when (.isAfter (:date article) since)
-                  (rss.ons/notify notification-client (get-topic config) article))
-                (out "Invalid article: " (or article "(null)"))))
+            ;; For each valid, unexpired article in the feed...
+            (doseq [article (parse-feed (xml/parse feed))
+                    :when (and (rss.article/valid? article)
+                               (not (expired? article)))]
+              ;; Notify for recent articles we haven't already seen.
+              (if (rss.article/cached? article-cache article)
+                (out "Already seen article published " (:date article))
+                (do
+                  (rss.ons/notify ons-client topic article)
+                  (rss.article/add-to-cache article-cache article))))
 
             (catch Exception e
               (out "Failed to read feed: " feed ": " (.getMessage e)))))
 
-        (out "Sleeping for " (get-interval config) " minutes")
-        (Thread/sleep (-> (TimeUnit/MINUTES) (.toMillis (get-interval config))))
-
         ;; Clean up the notification client.
-        (.close notification-client))
+        (.close ons-client)
 
-      ;; Advance the time window.
-      (recur (deref last-cycle)))))
+        (out "Sleeping for " (get-interval config) " minutes")
+        (Thread/sleep (-> (TimeUnit/MINUTES) (.toMillis (get-interval config))))))))

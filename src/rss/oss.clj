@@ -36,9 +36,9 @@
       (println (str "Unable to create client for Object Storage Service: "
                     (.getMessage e))))))
 
-(defn get-handle-for
-  "Creates an OSS client using resource principal, instance principal, or
-  file-based authentication details providers."
+(defn get-stream-for
+  "Returns an InputStream for an object in Object Storage Service located in
+  the given namespace, bucket, and object tuple from the supplied collection."
   [oss-location]
   (let [client (make-client)
         request (-> (GetObjectRequest/builder)
@@ -48,4 +48,5 @@
                     (.build))
         response (.getObject client request)
         stream (.getInputStream response)]
+    (.close client)
     stream))

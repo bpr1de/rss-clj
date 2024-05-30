@@ -12,7 +12,7 @@
         <id>https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.601ab091b19b7cc3ccf16c56e68e88c53ff3d7c3.001.1</id>
         <link rel="alternate" href="https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.601ab091b19b7cc3ccf16c56e68e88c53ff3d7c3.001.1.cap"/>
         <updated>2024-05-22T20:52:00-04:00</updated>
-        <published>2024-05-22T20:52:00-04:00</published>
+        <published>2024-05-23T21:02:13-04:00</published>
         <author>
             <name>NWS</name>
         </author>
@@ -117,7 +117,7 @@ evening.
     <entry>
         <id>https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.b5b8e1443ad052cbcebb03938824c1d699455e55.001.1</id>
         <link rel="alternate" href="https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.b5b8e1443ad052cbcebb03938824c1d699455e55.001.1.cap"/>
-        <updated>2024-05-22T20:52:00-04:00</updated>
+        <updated>2024-05-23T21:02:13-04:00</updated>
         <published>2024-05-22T20:52:00-04:00</published>
         <author>
             <name>NWS</name>

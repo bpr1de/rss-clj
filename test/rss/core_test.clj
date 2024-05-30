@@ -1,7 +1,9 @@
 (ns rss.core-test
   (:require [clojure.xml :as xml])
   (:require [clojure.test :refer :all]
-            [rss.core :refer :all]))
+            [rss.article :refer :all]
+            [rss.core :refer :all])
+  (:import (java.time.temporal ChronoUnit)))
 
 ;; Test parsing of RSS dates for various formats.
 (deftest parse-rss-date
@@ -31,8 +33,8 @@
   (testing "Checking valid/invalid article handling"
     (let [valid-article (parse-feed (xml/parse "test/rss-feed.xml"))
           invalid-articles (parse-feed (xml/parse "test/invalid-rss-feed.xml"))]
-      (is (valid-article? (first valid-article)))
-      (is (every? #(not (valid-article? %)) invalid-articles)))))
+      (is (valid? (first valid-article)))
+      (is (every? #(not (valid? %)) invalid-articles)))))
 
 ;; Parse sample RSS unit test data.
 (deftest parse-rss-feed
@@ -77,5 +79,58 @@
              (str "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0."
                   "b5b8e1443ad052cbcebb03938824c1d699455e55.001.1.cap")))
       (is (= (str (:date (nth articles 1)))
-             "2024-05-23T00:52:00Z"))
+             "2024-05-24T01:02:13Z"))
       (is (= (:type (nth articles 1)) :atom)))))
+
+(deftest cache
+  (testing "Single item in cache"
+    (let [articles (concat (parse-feed (xml/parse "test/rss-feed.xml"))
+                           (parse-feed (xml/parse "test/atom-feed.xml")))
+          cache (make-cache)]
+      ;; Cache begins empty
+      (is (empty? (deref cache)))
+      (is (not (cached? cache (first articles))))
+
+      ;; Add one article to cache
+      (add-to-cache cache (first articles))
+      (is (= (count (deref cache)) 1))
+      (is (cached? cache (first articles)))
+      (is (not (cached? cache (nth articles 1))))))
+
+  (testing "Multiple items in cache"
+    (let [articles (concat (parse-feed (xml/parse "test/rss-feed.xml"))
+                           (parse-feed (xml/parse "test/atom-feed.xml")))
+          cache (make-cache)]
+
+      ;; Add all articles to cache; validate no duplicates
+      (doseq [i articles]
+        (add-to-cache cache i))
+      (doseq [i articles]
+        (add-to-cache cache i))
+      (is (= (count (deref cache)) (count articles)))
+      (doseq [i articles]
+        (is (cached? cache i)))))
+
+  (testing "Cache eviction"
+    (let [articles (concat (parse-feed (xml/parse "test/rss-feed.xml"))
+                           (parse-feed (xml/parse "test/atom-feed.xml")))
+          cache (make-cache)
+          eviction-date (.minus (rss.feeds.atom/parse-date
+                                  "2024-05-22T16:47:31-00:00")
+                                7 ChronoUnit/MINUTES)
+          expired? #(.isBefore (:date %) eviction-date)]
+
+      ;; Prune empty cache
+      (prune-cache expired? cache)
+      ;; Add all articles to cache
+      (doseq [i articles]
+        (add-to-cache cache i))
+      (is (expired? (nth articles 0)))
+      (is (expired? (nth articles 1)))
+      (is (not (expired? (nth articles 2))))
+      (is (not (expired? (nth articles 3))))
+      ;; Evict old entries
+      (prune-cache expired? cache)
+      ;; Compare size
+      (is (= (count (deref cache)) 2))
+      (is (= (count articles) 4)))))
