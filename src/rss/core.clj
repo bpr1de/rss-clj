@@ -5,8 +5,7 @@
             [rss.feeds.rss]
             [rss.ons]
             [rss.oss])
-  (:import (java.io IOException)
-           (java.time LocalDateTime)
+  (:import (java.time LocalDateTime)
            (java.time ZoneId ZoneOffset)
            (java.time.temporal ChronoUnit)
            (java.util.concurrent TimeUnit))
@@ -15,7 +14,7 @@
 (defn now
   []
   "Get the current time in UTC."
-  (.toInstant (LocalDateTime/now (ZoneId/of "UTC")) (ZoneOffset/UTC)))
+  (.toInstant (LocalDateTime/now (ZoneId/of "UTC")) ZoneOffset/UTC))
 
 (defn out
   [& args]
@@ -84,7 +83,7 @@
   (try
     (out "Attempting to read '" config-path "'")
     (xml/parse (get-config-reference config-path))
-    (catch IOException e
+    (catch Exception e
       (out "Error reading configuration '" config-path "': " (.getMessage e)))))
 
 (defn -main
@@ -132,7 +131,8 @@
               (out "Failed to read feed: " feed ": " (.getMessage e)))))
 
         ;; Clean up the notification client.
-        (.close ons-client)
+        (if ons-client
+          (.close ons-client))
 
         (out "Sleeping for " (get-interval config) " minutes")
-        (Thread/sleep (-> (TimeUnit/MINUTES) (.toMillis (get-interval config))))))))
+        (Thread/sleep (-> TimeUnit/MINUTES (.toMillis (get-interval config))))))))

@@ -6,8 +6,7 @@
 ;;
 (ns rss.ons
   (:require [rss.constants :as const])
-  (:import (java.io IOException)
-           (com.oracle.bmc.auth SessionTokenAuthenticationDetailsProvider
+  (:import (com.oracle.bmc.auth SessionTokenAuthenticationDetailsProvider
                                 InstancePrincipalsAuthenticationDetailsProvider
                                 ResourcePrincipalAuthenticationDetailsProvider)
            (com.oracle.bmc.ons NotificationDataPlaneClient)
@@ -32,7 +31,7 @@
       true
       (.build (NotificationDataPlaneClient/builder)
               (SessionTokenAuthenticationDetailsProvider.)))
-    (catch IOException e
+    (catch Exception e
       (println (str "Unable to set up notification method: "
                     (.getMessage e) "; will print only.")))))
 

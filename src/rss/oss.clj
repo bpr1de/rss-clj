@@ -4,12 +4,12 @@
 ;; object, and policy to support configuration pulls from it.
 ;;
 (ns rss.oss
-  (:import (java.io IOException)
-           (com.oracle.bmc.auth SessionTokenAuthenticationDetailsProvider
+  (:import (com.oracle.bmc.auth SessionTokenAuthenticationDetailsProvider
                                 InstancePrincipalsAuthenticationDetailsProvider
                                 ResourcePrincipalAuthenticationDetailsProvider)
            (com.oracle.bmc.objectstorage ObjectStorageClient)
-           (com.oracle.bmc.objectstorage.requests GetObjectRequest)))
+           (com.oracle.bmc.objectstorage.requests GetObjectRequest)
+           (java.io ByteArrayInputStream)))
 
 (defn make-client
   "Creates an OSS client using resource principal, instance principal, or
@@ -29,13 +29,15 @@
       true
       (.build (ObjectStorageClient/builder)
               (SessionTokenAuthenticationDetailsProvider.)))
-    (catch IOException e
+    (catch Exception e
       (println (str "Unable to create client for Object Storage Service: "
-                    (.getMessage e))))))
+                    (.getMessage e)))
+      (System/exit 1))))
 
 (defn get-stream-for
-  "Returns an InputStream for an object in Object Storage Service located in
-  the given namespace, bucket, and object tuple from the supplied collection."
+  "Returns an InputStream for a String read from an object in Object Storage
+  Service located in the given namespace, bucket, and object tuple from the
+  supplied collection."
   [oss-location]
   (let [client (make-client)
         request (-> (GetObjectRequest/builder)
@@ -44,6 +46,7 @@
                     (.objectName (nth oss-location 2))
                     (.build))
         response (.getObject client request)
-        stream (.getInputStream response)]
+        stream (.getInputStream response)
+        config (slurp stream :encoding "UTF-8")]
     (.close client)
-    stream))
+    (ByteArrayInputStream. (.getBytes config "UTF-8"))))
