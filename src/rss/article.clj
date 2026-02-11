@@ -5,7 +5,7 @@
 ;; a hyperlink, and a publication date.
 (defrecord Article [type title description link date]
   Object
-  (toString [_] (format "%s\n%s\n%s\n%s" title description link date)))
+  (toString [_] (format "%s\n%s\n%s\n%s" date title description link)))
 
 (defn valid?
   [article]
