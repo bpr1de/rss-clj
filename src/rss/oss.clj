@@ -5,11 +5,9 @@
 ;;
 (ns rss.oss
   (:import (java.io IOException)
-           (com.oracle.bmc ConfigFileReader)
-           (com.oracle.bmc.auth ConfigFileAuthenticationDetailsProvider
+           (com.oracle.bmc.auth SessionTokenAuthenticationDetailsProvider
                                 InstancePrincipalsAuthenticationDetailsProvider
-                                ResourcePrincipalAuthenticationDetailsProvider
-                                )
+                                ResourcePrincipalAuthenticationDetailsProvider)
            (com.oracle.bmc.objectstorage ObjectStorageClient)
            (com.oracle.bmc.objectstorage.requests GetObjectRequest)))
 
@@ -30,8 +28,7 @@
       ;; Local config file
       true
       (.build (ObjectStorageClient/builder)
-              (ConfigFileAuthenticationDetailsProvider.
-                (ConfigFileReader/parseDefault))))
+              (SessionTokenAuthenticationDetailsProvider.)))
     (catch IOException e
       (println (str "Unable to create client for Object Storage Service: "
                     (.getMessage e))))))
